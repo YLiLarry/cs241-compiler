@@ -1,6 +1,7 @@
 #lang typed/racket
 
 (require "listex.rkt")
+(provide (all-defined-out))
 
 ; convert between a natural number and a binary string
 
