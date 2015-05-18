@@ -1,1 +1,0 @@
-("6.1.1" ("a992053520ee166a62db658b220cf67ced8620ac" . "1e9ffda28551ea9b8b01b631fc5b36fd8d2cd92c") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"base.rkt") #"/Users/Larry_Li/lab/racket/compiler/assembler/translate.rkt" #"/Users/Larry_Li/lab/racket/compiler/assembler/parse.rkt")

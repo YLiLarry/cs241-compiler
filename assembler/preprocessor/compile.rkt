@@ -1,7 +1,10 @@
 #lang typed/racket
 
+(require "type.rkt")
 (require "../type.rkt")
 (require "../../word.rkt")
+
+(provide (all-defined-out))
 
 #|
 Stmt = Inst
@@ -14,15 +17,6 @@ def-val = Inst-assign-imm = Real-number
         | Inst-assign-result = Op Reg Reg
         
 |#
-       
-(define-type Stmt (U Inst Inst-ext))
-(define-type Inst-ext (U Inst-if Inst-assign))
-
-(struct Inst-assign ([reg : Reg] [val : (U Inst-assign-imm Inst-assign-result)]))
-(struct Inst-assign-imm ([val : Val]))
-(struct Inst-assign-result ([op : Op] [r1 : Reg] [r2 : Reg]))
-
-(struct Inst-if ([cond : Reg] [true : (Listof Stmt)] [false : (Listof Stmt)]))
 
 (: preprocess-one (Stmt -> (Listof Inst)))
 (define (preprocess-one stmt)
