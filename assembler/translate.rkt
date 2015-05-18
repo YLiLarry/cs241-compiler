@@ -4,13 +4,32 @@
 (require "type.rkt")
 (provide (all-defined-out))
 
-(: translate-one (Inst -> String))
-(define (translate-one inst)
+(: inst->bin (Inst -> String))
+(define (inst->bin inst)
     (word32->hex32 (match inst
-        ; [(list 'jr  s te tes)       "test"]
-        [(Inst-r 'slt rd rs rt) (replace-r "0000 00ss ssst tttt dddd d000 0010 1010" rd rs rt)]
-        [(Inst-i 'beq rs rt im) (replace-i "0001 00ss ssst tttt iiii iiii iiii iiii" rs rt im)]
-        [(Inst-j 'jr  rs)       (replace-j "0000 00ss sss0 0000 0000 0000 0000 1000" rs)]
+        ; std type
+        [(Inst-std 'add s t d)  (replace-std s t d (remove-space "0000 00ss ssst tttt dddd d000 0010 0000"))]
+        [(Inst-std 'sub s t d)  (replace-std s t d (remove-space "0000 00ss ssst tttt dddd d000 0010 0010"))]
+        [(Inst-std 'slt s t d)  (replace-std s t d (remove-space "0000 00ss ssst tttt dddd d000 0010 1010"))]
+        [(Inst-std 'sltu s t d) (replace-std s t d (remove-space "0000 00ss ssst tttt dddd d000 0010 1011"))]
+        ; st type
+        [(Inst-st 'mult s t)  (replace-st s t (remove-space "0000 00ss ssst tttt 0000 0000 0001 1000"))]
+        [(Inst-st 'multu s t) (replace-st s t (remove-space "0000 00ss ssst tttt 0000 0000 0001 1001"))]
+        [(Inst-st 'div s t)   (replace-st s t (remove-space "0000 00ss ssst tttt 0000 0000 0001 1010"))]
+        [(Inst-st 'divu s t)  (replace-st s t (remove-space "0000 00ss ssst tttt 0000 0000 0001 1011"))]
+        ; s type
+        [(Inst-s 'jr s)   (replace-s s (remove-space "0000 00ss sss0 0000 0000 0000 0000 1000"))]
+        [(Inst-s 'jalr s) (replace-s s (remove-space "0000 00ss sss0 0000 0000 0000 0000 1001"))]
+        ; sti type
+        [(Inst-sti 'beq s t i) (replace-sti s t i (remove-space "0001 00ss ssst tttt iiii iiii iiii iiii"))]
+        [(Inst-sti 'ben s t i) (replace-sti s t i (remove-space "0001 01ss ssst tttt iiii iiii iiii iiii"))]
+        [(Inst-sti 'lw s t i)  (replace-sti s t i (remove-space "1000 11ss ssst tttt iiii iiii iiii iiii"))]
+        [(Inst-sti 'sw s t i)  (replace-sti s t i (remove-space "1010 11ss ssst tttt iiii iiii iiii iiii"))]
+        ; d type
+        [(Inst-d 'mfhi d) (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0000"))]
+        [(Inst-d 'mfho d) (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0010"))]
+        [(Inst-d 'lis d)  (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0100"))]
+        ; other type
     ))
 )
 
@@ -26,29 +45,33 @@
 (: bin-16 (Integer -> String))
 (define (bin-16 x) (int->word16 x))
 
-(: replace-r (String Reg Reg Reg -> String))
-(define (replace-r x rd rs rt) 
-    (string-replace
-        (string-replace
-            (string-replace (remove-space x) "ddddd" (bin-5 rt))
-            "sssss" 
-            (bin-5 rs))
-        "ttttt"
-    (bin-5 rt))
+(: replace-s (Reg String -> String))
+(define (replace-s s str)
+    (string-replace str "sssss" (bin-5 s))
 )
 
-(: replace-i (String Reg Reg Val -> String))
-(define (replace-i x rs rt im) 
-    (string-replace
-        (string-replace
-            (string-replace (remove-space x) "iiiiiiiiiiiiiiii" (bin-16 im))
-            "sssss" 
-            (bin-5 rs))
-        "ttttt"
-    (bin-5 rt))
+(: replace-t (Reg String -> String))
+(define (replace-t t str)
+    (string-replace str "ttttt" (bin-5 t))
 )
 
-(: replace-j (String Reg -> String))
-(define (replace-j x rs) (string-replace (remove-space x) "sssss" (bin-5 rs)))
+(: replace-d (Reg String -> String))
+(define (replace-d d str)
+    (string-replace str "ddddd" (bin-5 d))
+)
+    
+(: replace-i (Val String -> String))
+(define (replace-i i str)
+    (string-replace str "iiiiiiiiiiiiiiii" (bin-16 i))
+)
+    
+(: replace-std (Reg Reg Reg String -> String))
+(define (replace-std d s t str) (replace-d d (replace-st s t str)))
 
-; (translate-one (list 'jr 31))
+(: replace-st (Reg Reg String -> String))
+(define (replace-st s t str) (replace-s s (replace-t t str)))
+
+(: replace-sti (Reg Reg Val String -> String))
+(define (replace-sti s t i str) (replace-i i (replace-st s t str)))
+
+(inst->bin (Inst-s 'jr 31))

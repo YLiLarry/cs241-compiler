@@ -65,7 +65,7 @@
 
 (: word32->hex32 (String -> String))
 (define (word32->hex32 str) 
-    (when (not (eq? (string-length str) 32)) (error "word32->hex32: input is not 32 bits"))
+    (when (not (eq? (string-length str) 32)) (error "input is not 32 bits" str))
     (foldr string-append "" (map (compose nat->hex binary->nat) (string-group 4 str)))
 )
 
