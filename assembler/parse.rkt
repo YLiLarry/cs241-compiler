@@ -2,6 +2,7 @@
 
 (require "../strnum.rkt")
 (require "type.rkt")
+(require "preprocessor/type.rkt")
 (require "translate.rkt")
 (provide (all-defined-out))
 
@@ -89,4 +90,25 @@
 
 
 (: split-line (String -> (Listof String)))
-(define (split-line str) (string-split (string-replace str "," " ") " "))
+(define (split-line str) 
+    (match str
+        [(regexp "if")
+            (match (regexp-match* "([\\{\\(].+?[\\}\\)])" str)
+                [(list if-cond if-true if-false)
+                    (cond 
+                        [(and (string? if-true) (string? if-false)) 
+                            (list "if" 
+                                (string-trim if-cond #rx"[()]") 
+                                (string-trim if-true #rx"[{}]") 
+                                (string-trim if-false #rx"[{}]")
+                            )
+                        ]
+                        [else (error "can't parse")]
+                    )
+                ]
+            )
+        ]
+        [else (string-split str " ")]
+    )
+)
+

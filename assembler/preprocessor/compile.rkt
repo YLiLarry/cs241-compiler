@@ -41,6 +41,7 @@ def-val = Inst-assign-imm = Real-number
             ))]
         )]
         [(and x (Inst-std op s t d)) (list x)]
+        [else (error "preprocess-one" stmt)]
     )
 )
 
