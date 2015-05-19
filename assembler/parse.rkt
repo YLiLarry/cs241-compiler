@@ -112,3 +112,36 @@
     )
 )
 
+(: until-complete-brackets (String -> (Values String String)))
+(define (until-complete-brackets str)
+    
+    (: rec (Integer (Listof Char) -> (Listof Char)))
+    (define (rec count ls)
+        (cond
+            [(equal? count 0) empty]
+            [(empty? ls) (error "bracket mismatch" str)]
+            [(equal? (first ls) #\{ ) (cons #\{ (rec (+ count 1) (rest ls)))]
+            [(equal? (first ls) #\} ) (cons #\} (rec (- count 1) (rest ls)))]
+            [else (cons (first ls) (rec count (rest ls)))]
+        )
+    )
+    
+    (match (regexp-match-positions #px"\\{" str)
+        [(? list? pos) (let* (
+                [p (first pos)]
+                [i (cdr p)]
+                [before (substring str 0 i)]
+                [block (list->string (rec 1 (string->list (substring str i))))]
+                [after (substring str (+ i (string-length block)))]
+            )
+            (newline)
+            (print block)
+            (newline)
+            (values (string-append before block) after)
+        )]
+        [#f (values str "")]
+    )
+    
+)
+
+

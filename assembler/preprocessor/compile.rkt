@@ -42,6 +42,10 @@ def-val = Inst-assign-imm = Real-number
             ))]
         )]
         [(and x (Inst-std op s t d)) (list x)]
+        [(and x (Inst-sti op s t i)) (list x)]
+        [(and x (Inst-st op s t)) (list x)]
+        [(and x (Inst-s op s)) (list x)]
+        [(and x (Inst-d op d)) (list x)]
         [else (error "preprocess-one" stmt)]
     )
 )
