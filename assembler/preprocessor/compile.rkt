@@ -38,6 +38,7 @@ def-val = Inst-assign-imm = Real-number
                 ['- (Inst-std 'sub  reg r1 r2)]
                 ['* (Inst-std 'mult reg r1 r2)]
                 ['/ (Inst-std 'div  reg r1 r2)]
+                ['< (Inst-std 'slt  reg r1 r2)]
             ))]
         )]
         [(and x (Inst-std op s t d)) (list x)]
@@ -67,7 +68,3 @@ def-val = Inst-assign-imm = Real-number
 (define val->string number->string)
 
 
-(preprocess-one (Inst-if 4 (list (Inst-std 'add 3 2 1)) (list (Inst-std 'add 3 2 3))))
-
-(preprocess-one (Inst-assign 3 (Inst-assign-result '+ 2 1)))
-(map inst->string (preprocess-one (Inst-assign 3 (Inst-assign-imm 15))))

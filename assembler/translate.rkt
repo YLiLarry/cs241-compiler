@@ -74,4 +74,3 @@
 (: replace-sti (Reg Reg Val String -> String))
 (define (replace-sti s t i str) (replace-i i (replace-st s t str)))
 
-(inst->bin (Inst-s 'jr 31))
