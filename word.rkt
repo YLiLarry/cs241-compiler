@@ -38,7 +38,7 @@
     (let [(x (string-length str))]
         (cond 
             [(< x len) (string-append (make-string (- len x) #\0) str)]
-            [else str]
+            [else (substring str (- x len) x)]
         )
     )
 )
@@ -71,3 +71,15 @@
 
 (: int->hex32 (Integer -> String))
 (define int->hex32 (compose word32->hex32 int->word32))
+
+(: hex->int (String -> Integer))
+(define (hex->int str) 
+    (let* ([n (string-trim str #px"^0x")] [x (string->number n 16)])
+        (cond 
+            [(exact-integer? x) x]
+            ; [(and (nteger? x) (inexact? x)) (inexact->exact x)]
+            [else (error "hex->int" str n x)]
+        )
+    )
+)
+

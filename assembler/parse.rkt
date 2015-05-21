@@ -1,6 +1,7 @@
 #lang typed/racket
 
-(require "../strnum.rkt")
+;(require "../strnum.rkt")
+(require "../word.rkt")
 (require "type.rkt")
 (require "preprocessor/type.rkt")
 (require "translate.rkt")
@@ -40,13 +41,14 @@
 
 (: parse-inst ((Listof String) -> Inst))
 (define (parse-inst ls) 
-    (let [(op (parse-op (first ls))) (x (rest ls))]
+    (let ([op (parse-op (first ls))] [x (rest ls)])
         (cond
             [(member op std-list) (match x [(list s t d) (Inst-std op (parse-rg d) (parse-rg s) (parse-rg t))])]
             [(member op st-list) (match x [(list s t) (Inst-st op (parse-rg s) (parse-rg t))])]
             [(member op s-list) (match x [(list s) (Inst-s op (parse-rg s))])]
             [(member op sti-list) (match x [(list s t i) (Inst-sti op (parse-rg s) (parse-rg t) (parse-vl i))])]
             [(member op d-list) (match x [(list d) (Inst-d op (parse-rg d))])]
+            [(equal? op '.word) (Word (hex->int (first x)))]
             [else (error "parse error" ls)]
         )
     )
@@ -59,6 +61,7 @@
 (define (parse-rg str)
     (match str
         [(pregexp "\\$\\d+" (list x)) (parse-nat (substring x 1))]
+        [x (error "parse-rg" x)]
     )
 )
 
@@ -66,6 +69,7 @@
 (define (parse-vl str)
     (match str
         [(pregexp "^\\d+" (list x)) (parse-int x)]
+        [x (error "parse-vl" x)]
     )
 )
 
@@ -74,7 +78,7 @@
     (define x (string->number s))
     (cond
         [(exact-nonnegative-integer? x) x]
-        [else (error "no parse")]
+        [else (error "parse-nat" x)]
     )
 )
 
@@ -83,37 +87,14 @@
     (define x (string->number s))
     (cond
         [(exact-integer? x) x]
-        [else (error "no parse")]
+        [else (error "parse-int" x)]
     )
 )
     
 
-
-(: split-line (String -> (Listof String)))
-(define (split-line str) 
-    (match str
-        [(regexp "if")
-            (match (regexp-match* "([\\{\\(].+?[\\}\\)])" str)
-                [(list if-cond if-true if-false)
-                    (cond 
-                        [(and (string? if-true) (string? if-false)) 
-                            (list "if" 
-                                (string-trim if-cond #rx"[()]") 
-                                (string-trim if-true #rx"[{}]") 
-                                (string-trim if-false #rx"[{}]")
-                            )
-                        ]
-                        [else (error "can't parse")]
-                    )
-                ]
-            )
-        ]
-        [else (string-split str " ")]
-    )
-)
-
-(: until-complete-brackets (String -> (Values String String)))
-(define (until-complete-brackets str)
+    
+(: find-complete-brackets (String Boolean -> (Values String String)))
+(define (find-complete-brackets str include-before?)
     
     (: rec (Integer (Listof Char) -> (Listof Char)))
     (define (rec count ls)
@@ -134,14 +115,64 @@
                 [block (list->string (rec 1 (string->list (substring str i))))]
                 [after (substring str (+ i (string-length block)))]
             )
-            (newline)
-            (print block)
-            (newline)
-            (values (string-append before block) after)
+            (values (string-append (if include-before? before "") block) after)
         )]
         [#f (values str "")]
     )
     
+)
+
+(: until-complete-brackets (String -> (Values String String)))
+(define (until-complete-brackets str) (find-complete-brackets str #t));
+
+(: complete-brackets (String -> (Values String String)))
+(define (complete-brackets str) (find-complete-brackets str #f));
+
+
+(: strict-regex-match (Regexp String -> String))
+(define (strict-regex-match px str)
+    (let ([x (regexp-match px str)])
+        (cond 
+            [(list? x) (first x)]
+            [else (error "strict-regex-match" px str)]
+        )
+    )
+)    
+
+
+(: split-line (String -> (Listof String)))
+(define (split-line str) 
+    (: first-round-bracket (String -> String))
+    (define (first-round-bracket str)
+        (match (regexp-match "\\(.+?\\)" str)
+            [#f (error "first-round-bracket")]
+            [(? list? ls) (string-trim (first ls) #px"[()]")]
+        )
+    )
+    
+    (match (string-trim str)
+        [(regexp #px"(^if)") (let*-values (
+                [(after)  (strict-regex-match #px"\\{.*" str)]
+                [(b1 b1r) (until-complete-brackets after)]
+                [(b2 b2r) (until-complete-brackets b1r)] 
+            )
+            (list "if" 
+                (first-round-bracket str) 
+                (string-trim b1 #px"[{}]") 
+                (string-trim (string-trim b2 #px"\\s*else.*\\{") #px"\\}")
+            )
+        )]
+        [(regexp #px"(^while)") (let*-values (
+                [(after)  (strict-regex-match #px"\\{.*" str)]
+                [(b1 b1r) (until-complete-brackets after)]
+            )
+            (list "while" 
+                (first-round-bracket str) 
+                (string-trim b1 #px"[{}]") 
+            )
+        )]
+        [else (string-split str " ")]
+    )
 )
 
 

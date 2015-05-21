@@ -14,6 +14,7 @@
         [(list reg "=" r1 op r2) (Inst-assign (parse-rg reg) (Inst-assign-result (parse-op-ext op) (parse-rg r1) (parse-rg r2)))]
         [(list reg "=" im) (Inst-assign (parse-rg reg) (Inst-assign-imm (parse-vl im)))]
         [(list "if" if-cond if-true if-false) (Inst-if (parse-rg if-cond) (split-parse if-true) (split-parse if-false))]
+        [(list "while" while-cond while-true) (Inst-while (parse-rg while-cond) (split-parse while-true))]
         [x (parse-inst x)]
     )
 )
@@ -35,7 +36,7 @@
     (: rec ((Listof String) (Listof Char) String -> (Listof String)))
     (define (rec done curr str)
         (cond 
-            [(equal? str "") (append done (list (list->string curr)))]
+            [(equal? (string-trim str) "") (append done (list (list->string curr)))]
             [else (match (get-word str) 
                 [(cons w wr) (match w
                     ["while" (let*-values (
@@ -70,31 +71,36 @@
                             )]
                         )
                     )]
-                        
-                    [else (rec done (append curr (string->list w)) wr)]
+                    
+                    [x (cond [(regexp-match #px"\\;" w) (rec 
+                                (append done (list (string-append (list->string curr) (string-trim w #px"\\;"))))
+                                empty 
+                                wr
+                             )]
+                             [else (rec done (append curr (string->list w) (list #\space) ) wr)]
+                    )]
                 )]
                 [else (error "split-lines")]
             )]
         )
     )
-    (rec '() '() str)
+
+    (: filter-empty-string ((Listof String) -> (Listof String)))
+    (define (filter-empty-string ls) (filter (lambda (elem) (not (equal? "" elem))) ls))
+    
+    (filter-empty-string (rec '() '() str))
 )
 
 
 (: get-word (String -> (Pair String String)))
 (define (get-word str)
-    (let ([ls (regexp-match #px"\\s*\\S+" str)])
+    (let ([ls (regexp-match #px"(\\s*\\S+)||$" str)])
         (cond 
             [(list? ls) (let ([m (first ls)]) (cons (string-trim m) (string-trim (substring str (string-length m)))))]
             [else (error "get-word" str)]
         )
     )
 )
-
-(split-lines "asdf; if { while { if ($3) then {$2 = $3 + $1; $1+$3;} else {$4 = $3 + $2;} } asdfasdf; } asdf; ")
-
-; (: filter-empty-string ((Listof String) -> (Listof String)))
-; (define (filter-empty-string ls) (filter (lambda (elem) (not (equal? "" elem))) ls))
 
 ; (: string-split-at (String String -> (Values String String)))
 ; (define (string-split-at rx str)
@@ -117,15 +123,15 @@
 (: rewrite-ext (String -> String))
 (define (rewrite-ext str) 
     (string-join (flatten (map 
-        (lambda ([line : String]) (map inst->string (preprocess-one (parse-inst-ext (split-line line)))))
-        (split-lines str)
+        (lambda ([stmt : Stmt]) (map inst->string (preprocess-one stmt)))
+        (split-parse str)
     )) "\n")
 )
 
 (: split-parse (String -> (Listof Stmt)))
 (define (split-parse str)
     (map (lambda ([line : String]) (parse-inst-ext (split-line line))) 
-        (split-lines str)
+        (split-lines (string-normalize-spaces str))
     )
 )
 
@@ -141,3 +147,28 @@
 ; (map inst->string (preprocess-one (parse-inst-ext (list "$1" "=" "$2" "+" "$3"))))
 
 
+; (split-lines " $2 = 1; $2 = 1; if ($2) { if ($3) then {$2 = $3 + $1; $1+$3;} else {$4 = $3 + $2;} } else { $2 = 1; $2 = 1; } $2 = 1;")
+; (split-lines "  if ($2) { if ($3) { $2 = $3 + $1; $5 = $1 + $3; } else { $4 = $3 + $2; } } else { $1 = 2; }"  )
+; (map split-line (split-lines "  if ($2) { if ($3) { $2 = $3 + $1; $5 = $1 + $3; } else { $4 = $3 + $2; } } else { $1 = 2; }"  ))
+; (parse-inst-ext (list "asdf;"))
+; (displayln (split-parse "  if ($3) { $2 = $3 + $1; $5 = $1 + $3; } else { $4 = $3 + $2; }  "))
+; (displayln (split-parse "  if ($2) {  } else { $1 = 2; }  "))
+(displayln (rewrite-ext (string-normalize-spaces "
+
+$4 = 4;
+$7 = 1;
+$5 = $1 + $0;
+$10 = $2 + $0;
+while ($10) {
+    lis $30;
+    .word 0xffff000c;
+    sw $5 $30 0;
+    
+    $5 = $5 + $4;
+    $10 = $10 - $7;
+};
+jr $31;
+
+
+")))
+; (map parse-inst-ext '(("$2" "=" "1") ("$2" "=" "1") ("if" "$2" "$2 = $3 + $1; $5 = $1 + $3;" "$4 = $3 + $2;") ("$2" "=" "1")))

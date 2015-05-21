@@ -22,7 +22,7 @@
         [(Inst-s 'jalr s) (replace-s s (remove-space "0000 00ss sss0 0000 0000 0000 0000 1001"))]
         ; sti type
         [(Inst-sti 'beq s t i) (replace-sti s t i (remove-space "0001 00ss ssst tttt iiii iiii iiii iiii"))]
-        [(Inst-sti 'ben s t i) (replace-sti s t i (remove-space "0001 01ss ssst tttt iiii iiii iiii iiii"))]
+        [(Inst-sti 'bne s t i) (replace-sti s t i (remove-space "0001 01ss ssst tttt iiii iiii iiii iiii"))]
         [(Inst-sti 'lw s t i)  (replace-sti s t i (remove-space "1000 11ss ssst tttt iiii iiii iiii iiii"))]
         [(Inst-sti 'sw s t i)  (replace-sti s t i (remove-space "1010 11ss ssst tttt iiii iiii iiii iiii"))]
         ; d type
