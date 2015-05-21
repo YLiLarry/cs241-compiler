@@ -72,14 +72,14 @@
 (: int->hex32 (Integer -> String))
 (define int->hex32 (compose word32->hex32 int->word32))
 
-(: hex->int (String -> Integer))
-(define (hex->int str) 
+(: hex32->int (String -> Integer))
+(define (hex32->int str)
     (let* ([n (string-trim str #px"^0x")] [x (string->number n 16)])
+        (when (not (eq? (string-length n) 8)) (error "input is not 8 bytes" str))
         (cond 
-            [(exact-integer? x) x]
+            [(exact-integer? x) (if (> x 268435456) (bitwise-not (- x 1)) x)]
             ; [(and (nteger? x) (inexact? x)) (inexact->exact x)]
             [else (error "hex->int" str n x)]
         )
     )
 )
-

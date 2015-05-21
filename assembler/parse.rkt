@@ -48,7 +48,7 @@
             [(member op s-list) (match x [(list s) (Inst-s op (parse-rg s))])]
             [(member op sti-list) (match x [(list s t i) (Inst-sti op (parse-rg s) (parse-rg t) (parse-vl i))])]
             [(member op d-list) (match x [(list d) (Inst-d op (parse-rg d))])]
-            [(equal? op '.word) (Word (hex->int (first x)))]
+            [(equal? op '.word) (Word (hex32->int (first x)))]
             [else (error "parse error" ls)]
         )
     )
