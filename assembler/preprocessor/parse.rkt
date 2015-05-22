@@ -131,10 +131,9 @@
 (: split-parse (String -> (Listof Stmt)))
 (define (split-parse str)
     (map (lambda ([line : String]) (parse-inst-ext (split-line line))) 
-        (split-lines (string-normalize-spaces str))
+        (split-lines (string-normalize-spaces (string-replace str #px"\\s" " ")))
     )
 )
-
 
 ; (split-line "if ($3) then {$2 = $3 + 1; $3 + $1} else {$4 = $3 + $2}")
 ; (splitf-at (string->list "$1+$3; if ($3) then {$2 = $3 + $1} else {$4 = $3 + $2}") (lambda (s) (print (equal? s #\2 )) (not (equal? s #\2 ))))
@@ -153,22 +152,24 @@
 ; (parse-inst-ext (list "asdf;"))
 ; (displayln (split-parse "  if ($3) { $2 = $3 + $1; $5 = $1 + $3; } else { $4 = $3 + $2; }  "))
 ; (displayln (split-parse "  if ($2) {  } else { $1 = 2; }  "))
-(displayln (rewrite-ext (string-normalize-spaces "
+; (displayln (rewrite-ext (string-normalize-spaces "
 
-$4 = 4;
-$7 = 1;
-$5 = $1 + $0;
-$10 = $2 + $0;
-while ($10) {
-    lis $30;
-    .word 0xffff000c;
-    sw $5 $30 0;
-    
-    $5 = $5 + $4;
-    $10 = $10 - $7;
-};
-jr $31;
+; $4 = 4;
+; $7 = 1;
+; $5 = $1 + $0;
+; $10 = $2 + $0;
+
+; lis $30;
+; .word 0xffff000c;
+
+; while ($10) {
+;     $5 = $5 + $4;
+;     sw $5 $30 0;
+;     $10 = $10 - $7;
+; };
+
+; jr $31;
 
 
-")))
+; ")))
 ; (map parse-inst-ext '(("$2" "=" "1") ("$2" "=" "1") ("if" "$2" "$2 = $3 + $1; $5 = $1 + $3;" "$4 = $3 + $2;") ("$2" "=" "1")))
