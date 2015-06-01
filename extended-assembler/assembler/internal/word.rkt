@@ -75,11 +75,11 @@
 (: hex32->int (String -> Integer))
 (define (hex32->int str)
     (let* ([n (string-trim str #px"^0x")] [x (string->number n 16)])
-        (when (not (eq? (string-length n) 8)) (error "input is not 8 bytes" str))
         (cond 
-            [(exact-integer? x) (if (> x 268435456) (bitwise-not (- x 1)) x)]
+            [(exact-integer? x) (if (> x 2147483647) (- x 4294967296) x)]
             ; [(and (nteger? x) (inexact? x)) (inexact->exact x)]
             [else (error "hex->int" str n x)]
         )
     )
 )
+

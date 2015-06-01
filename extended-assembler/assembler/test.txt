@@ -1,0 +1,2 @@
+testlabel: .word 05
+.word testlabel 

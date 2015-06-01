@@ -5,6 +5,7 @@
     "internal/parse.rkt"
     "internal/word.rkt"
     "internal/strnum.rkt"
+    "internal/io.rkt"
 )
          
 (provide (all-from-out 
@@ -12,4 +13,5 @@
     "internal/parse.rkt"
     "internal/word.rkt"
     "internal/strnum.rkt"
+    "internal/io.rkt"
 ))

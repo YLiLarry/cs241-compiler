@@ -1,8 +1,15 @@
-#lang typed/racket
+; #lang typed/racket
+#lang racket
 
 (require "internal.rkt")
 ; (require "preprocessor/type.rkt")
 (require "translate.rkt")
+; (require/typed "tokenize.rkt"
+;     [#:struct token ([kind : Symbol] [lexeme : Any])]
+;     [scan (String -> (Listof token))]
+; )
+(require "tokenize.rkt")
+
 (provide (all-defined-out))
 
 (define std-list (list
@@ -37,7 +44,7 @@
     'lis
 ))
 
-(: parse-inst ((Listof String) -> Inst))
+; (: parse-inst ((Listof String) -> Inst))
 (define (parse-inst ls) 
     (let ([op (parse-op (first ls))] [x (rest ls)])
         (cond
@@ -52,10 +59,10 @@
     )
 )
 
-(: parse-op (String -> Op))
+; (: parse-op (String -> Op))
 (define parse-op string->symbol)
 
-(: parse-rg (String -> Reg))
+; (: parse-rg (String -> Reg))
 (define (parse-rg str)
     (match str
         [(pregexp "\\$\\d+" (list x)) (parse-nat (substring x 1))]
@@ -63,7 +70,7 @@
     )
 )
 
-(: parse-vl (String -> Val))
+; (: parse-vl (String -> Val))
 (define (parse-vl str)
     (match str
         [(pregexp "^\\d+" (list x)) (parse-int x)]
@@ -71,7 +78,7 @@
     )
 )
 
-(: parse-nat (String -> Natural))
+; (: parse-nat (String -> Natural))
 (define (parse-nat s)
     (define x (string->number s))
     (cond
@@ -80,7 +87,7 @@
     )
 )
 
-(: parse-int (String -> Integer))
+; (: parse-int (String -> Integer))
 (define (parse-int s)
     (define x (string->number s))
     (cond

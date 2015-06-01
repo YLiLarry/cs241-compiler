@@ -2,11 +2,11 @@
 
 (require "internal.rkt")
 
-(provide (all-defined-out))
+(provide inst->bin)
 
 (: inst->bin (Inst -> String))
 (define (inst->bin inst)
-    (word32->hex32 (match inst
+    (match inst
         ; std type
         [(Inst-std 'add s t d)  (replace-std s t d (remove-space "0000 00ss ssst tttt dddd d000 0010 0000"))]
         [(Inst-std 'sub s t d)  (replace-std s t d (remove-space "0000 00ss ssst tttt dddd d000 0010 0010"))]
@@ -30,7 +30,8 @@
         [(Inst-d 'mfho d) (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0010"))]
         [(Inst-d 'lis d)  (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0100"))]
         ; other type
-    ))
+        [(Word imm) (int->word32 imm)]
+    )
 )
 
 (: remove-space (String -> String))
@@ -73,4 +74,3 @@
 
 (: replace-sti (Reg Reg Val String -> String))
 (define (replace-sti s t i str) (replace-i i (replace-st s t str)))
-

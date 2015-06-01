@@ -34,3 +34,13 @@
 
 (: string->nat (String -> Natural))
 (define (string->nat str) (chars->nat (string->list str)))
+
+(: str->int (String -> Integer))
+(define (str->int str)
+    (let ([x (string->number str)])
+        (cond [(exact-integer? x) x]
+              [else (error "STRING IS NOT AN INTEGER" str)]
+        )
+    )
+)
+
