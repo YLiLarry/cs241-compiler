@@ -1,2 +1,20 @@
-testlabel: .word 05
-.word testlabel 
+
+
+.word label
+.word -2147483648
+.word 4294967295
+
+
+
+label:
+
+
+
+label2:
+
+
+.word label
+
+
+
+.word 123

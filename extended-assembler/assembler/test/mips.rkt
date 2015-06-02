@@ -1,19 +1,16 @@
 #lang racket
 
+(require "../mips.rkt")
 (require test-engine/racket-tests)
-(require "tokenize.rkt")
-(require "asm.rkt")
 
-(define (main) 
-    (let* ([in (read-input)]
-           [tb (fst-pass in)])
-        (snd-pass in tb)
-    )
+(check-expect
+    (fst-pass "
+        .word 445
+        a:
+        b:
+    ")
+    '((a . 4) (b . 4))
 )
-
-(main)
-
-
 
 (check-expect
     (fst-pass "
@@ -59,4 +56,5 @@
     ")
 )
 
-; (test)
+
+(test)
