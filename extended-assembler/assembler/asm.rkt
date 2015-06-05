@@ -1,5 +1,7 @@
 #lang racket
 
+; This file is the 'main' program
+
 (require "mips.rkt")
 (require "parse.rkt")
 (require "internal.rkt")

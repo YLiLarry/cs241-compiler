@@ -1,5 +1,7 @@
 #lang typed/racket
 
+; The code in this file parses the assembly lanauge into a list of Inst structure.
+
 (require "internal.rkt")
 (require/typed "tokenize.rkt"
     [#:struct token ([kind : Symbol] [lexeme : (U (Listof Char) Integer)])]

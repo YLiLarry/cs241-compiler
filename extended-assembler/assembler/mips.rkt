@@ -1,5 +1,7 @@
 #lang typed/racket
 
+; The code in this file assembles an Inst structure to the MIPS binary
+
 (require "internal.rkt")
 (require "parse.rkt")
 (provide inst->mips)
@@ -13,3 +15,5 @@
         [else (error "ERROR: NO PARSE" inst)]
     )
 )
+
+
