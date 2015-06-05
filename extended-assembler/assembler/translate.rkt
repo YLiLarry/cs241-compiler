@@ -1,5 +1,8 @@
 #lang typed/racket
 
+; The code in this file is used to print instructions into binary strings for debug
+; This file is not needed for the assmebler to function
+
 (require "internal.rkt")
 
 (provide inst->bin)

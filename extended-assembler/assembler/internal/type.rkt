@@ -15,3 +15,35 @@
 (struct: Inst-s ([op : Op] [rd : Reg]) #:transparent)
 (struct: Word ([val : Val]) #:transparent)
 
+
+(define std-list (list
+    'add
+    'sub
+    'slt
+    'sltu
+))
+
+(define st-list (list
+    'mult
+    'multu
+    'div
+    'divu
+))
+
+(define s-list (list
+    'jr
+    'jalr
+))
+
+(define sti-list (list
+    'lw
+    'sw
+    'beq
+    'bne
+))
+
+(define d-list (list
+    'mfhi
+    'mflo
+    'lis
+))

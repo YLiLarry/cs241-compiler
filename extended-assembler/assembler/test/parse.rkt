@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../mips.rkt")
+(require "../parse.rkt")
 (require test-engine/racket-tests)
 
 (check-expect
