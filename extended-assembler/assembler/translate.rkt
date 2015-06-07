@@ -1,8 +1,5 @@
 #lang typed/racket
 
-; The code in this file is used to print instructions into binary strings for debug
-; This file is not needed for the assmebler to function
-
 (require "internal.rkt")
 
 (provide inst->bin)
@@ -30,7 +27,7 @@
         [(Inst-sti 'sw s t i)  (replace-sti s t i (remove-space "1010 11ss ssst tttt iiii iiii iiii iiii"))]
         ; d type
         [(Inst-d 'mfhi d) (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0000"))]
-        [(Inst-d 'mfho d) (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0010"))]
+        [(Inst-d 'mflo d) (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0010"))]
         [(Inst-d 'lis d)  (replace-d d (remove-space "0000 0000 0000 0000 dddd d000 0001 0100"))]
         ; other type
         [(Word imm) (int->word32 imm)]

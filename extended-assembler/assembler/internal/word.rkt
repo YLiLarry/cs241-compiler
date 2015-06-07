@@ -53,10 +53,14 @@
 
 (: int->word (Positive-Integer Integer -> String))
 (define (int->word size x)
-    (let ([fix (lminus size 1)])
+    (let ([fix (lminus size 1)] 
+          [lim-1 (expt 2 (- size 1))]
+          [lim-2 (expt 2 size)])
         (cond 
             [(< x 0) (string-append "1" (fix-binary-length fix (nat->binary (abs (- (expt 2 fix) (abs x))))))]
-            [else (string-append "0" (fix-binary-length fix (nat->binary x)))]
+            [(and (<= 0 x) (< x lim-1)) (string-append "0" (fix-binary-length fix (nat->binary x)))]
+            [(and (<= lim-1 x) (< x lim-2)) (nat->binary x)]
+            [else (error 'ERROR "int->word ~a IS LONGER THAN ~a BITS" x size)] 
         )
     )
 )
@@ -76,10 +80,18 @@
 (define (hex32->int str)
     (let* ([n (string-trim str #px"^0x")] [x (string->number n 16)])
         (cond 
-            [(exact-integer? x) (if (> x 2147483647) (- x 4294967296) x)]
-            ; [(and (nteger? x) (inexact? x)) (inexact->exact x)]
-            [else (error "hex->int" str n x)]
+            [(exact-integer? x) (if (> x #x7fffffff) (- x #x100000000) x)]
+            [else (error 'ERROR "hex32->int ~a ~a ~a" str n x)]
         )
     )
 )
 
+(: word32->int (String -> Integer))
+(define (word32->int str)
+    (let* ([x (string->number str 2)])
+        (cond 
+            [(exact-integer? x) (if (> x #x7fffffff) (- x #x100000000) x)]
+            [else (error 'ERROR "word32->int ~a ~a ~a" str x)]
+        )
+    )
+)

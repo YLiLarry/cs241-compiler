@@ -1,5 +1,7 @@
 #lang typed/racket
 
+; data types, instruction code definitions and more
+
 (provide (all-defined-out))
 
 (define-type Val Integer)
