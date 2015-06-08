@@ -20,7 +20,8 @@
     lookup-label 
     print-label-table
     Label-Table
-    tokenize-file 
+    tokenize-file
+    remove-labels 
     (struct-out token))
 
 (: lookup-label ((Listof Char) Label-Table -> Natural))
@@ -120,13 +121,13 @@
     )
 )
 
-(: snd-pass (Tokenized-File Label-Table -> (Listof Inst)))
-(define (snd-pass in tb)
+(: snd-pass (Tokenized-File Label-Table Integer -> (Listof Inst)))
+(define (snd-pass in tb startlocation)
     (: remove-labels (token -> Boolean))
     (define (remove-labels x)
         (match x [(token 'label _) #f] [else #t])
     )
-    (define linenum -1)
+    (define linenum (- (quotient startlocation 4) 1))
     (filter-map 
         (lambda ([line : (Listof Token)]) 
             (let ([leftover (filter remove-labels line)])
@@ -139,12 +140,25 @@
     )
 )
 
-(: fst-pass (Tokenized-File -> Label-Table))
-(define (fst-pass str) (label-table-from-input str))
+(: remove-labels (Tokenized-File -> Tokenized-File))
+(define (remove-labels file)
+    (filter (lambda ([line : (Listof Token)]) (not (empty? line)))
+        (map 
+            (lambda ([line : (Listof Token)])
+                (filter 
+                    (lambda ([t : Token]) (match t [(token 'label _) #f] [else #t])) 
+                    line
+                )
+            )
+            file
+        )
+    )
+)
+      
 
 
-(: label-table-from-input (Tokenized-File -> Label-Table))
-(define (label-table-from-input file)
+(: fst-pass (Tokenized-File Natural -> Label-Table))
+(define (fst-pass file startlocation)
     (: build-label-table (Tokenized-File Natural -> Label-Table))
     (define (build-label-table ls linenum)
         (cond 
@@ -216,27 +230,31 @@
         )
     )
         
-    (let* ([result (build-label-table file 0)]) 
+    (let* ([result (build-label-table file startlocation)]) 
         (guard-duplicate (reverse result))
         result
     )
 )
 
-(: tokenize-file (String -> Tokenized-File))
+(: tokenize-file ((Listof String) -> Tokenized-File))
 (define (tokenize-file str)
-    (: normalize (String -> (U False String)))
-    (define (normalize str)
-        (let* ([x (string-normalize-spaces str)])
-            (cond [(string=? x "") #f]
-                  [else x]
-            )
-        )
-    )
-    (let * ([lines (filter-map normalize (string-split str #px"\n"))])
-        (map scan lines)
-    )
+    ; (: normalize (String -> (U False String)))
+    ; (define (normalize str)
+    ;     (let* ([x (string-normalize-spaces str)])
+    ;         (cond [(string=? x "") #f]
+    ;               [else x]
+    ;         )
+    ;     )
+    ; )
+    ; (let ([lines (filter-map normalize (string-split str #px"\n"))])
+        (map scan str)
+    ; )
 )
-            
+
+; (: tokenize-file ((Listof String) -> Tokenized-File))
+; (define (tokenize ls)
+;     (map scan ls)
+; )
 
 (: print-label-table (Label-Table -> Void))
 (define (print-label-table tb) 

@@ -4,11 +4,13 @@
 
 (require "mips.rkt")
 (require "parse.rkt")
+(require "merl.rkt")
 (require "internal.rkt")
+
 
 (define (main) 
     (let*-values ([(in) (read-input)]
-                  [(bytes table) (mips in)])
+                  [(bytes table) (merl in)])
         (print-label-table table)
         (for-each (lambda ([x : Bytes]) (display x)) bytes)
     )
